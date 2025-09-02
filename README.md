@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chyrp Feathers Ported to Supabase + FastAPI + Next.js
 
-## Getting Started
+This project ports the **Feathers** concept from [Chyrp Lite](https://github.com/xenocrat/chyrp-lite) into a modern stack using:
 
-First, run the development server:
+- **Supabase** for database and file storage
+- **FastAPI** as the backend service layer
+- **Next.js (App Router)** as the frontend for testing and interaction
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## What are Feathers in Chyrp?
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+In Chyrp Lite, *Feathers* are content types (similar to custom post types).  
+Each feather defines the fields, upload handling, and display logic for a specific type of content.  
+Examples include:
+- **Audio**: audio files with captions
+- **Video**: video uploads with optional poster and captions
+- **Photo**: single photo with caption and alternative text
+- **Link**: external link with description
+- **Quote**: quoted text with optional source
+- **Text**: plain text or formatted posts
+- **Uploader**: multiple files grouped into a single post
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- **Supabase**  
+  - Database table `posts` holds metadata about all feathers.  
+  - Storage bucket `uploads` holds actual media files (audio, video, images, documents).  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **FastAPI Backend**  
+  - Provides REST API endpoints for each feather type.  
+  - Handles file uploads and stores metadata in Supabase.  
+  - Implements validation and content-type checks.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Next.js Frontend**  
+  - Each feather has a simple form-based interface for testing.  
+  - Pages are located under `src/app/posts/[feather]/new/page.tsx`.  
+  - Submissions are sent to the FastAPI backend via fetch requests.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Features Implemented
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Audio Feather**  
+  Upload audio files with optional captions and description.
+
+- **Video Feather**  
+  Upload video files with optional poster image, captions, and description.
+
+- **Photo Feather**  
+  Upload an image with caption, alt text, and source URL.
+
+- **Link Feather**  
+  Submit external URLs with optional description and title.
+
+- **Quote Feather**  
+  Submit quoted text with optional source.
+
+- **Text Feather**  
+  Submit plain text with optional title.
+
+- **Uploader Feather**  
+  Upload multiple files (any type) with optional title and caption.
+
+---
+
+## Running the Project
+
+1. **Backend (FastAPI)**  
+   ```bash
+   cd chyrp-feathers-backend
+   python -m venv venv
+   ./venv/Scripts/activate   # Windows
+   pip install -r requirements.txt
+   uvicorn main:app --reload
+
+
+2. **Frontend for Testing (Next.js)**
+   ```bash
+   cd chyrp-feathers
+   npm install
+   npm run dev
+
+
+3. **Access**
+
+API available at http://127.0.0.1:8000
+
+Frontend available at http://localhost:3000
+
+
+**Database Schema (Supabase)**
+
+The posts table includes:
+
+id uuid primary key default gen_random_uuid(),
+type text not null,          -- "audio", "video", "photo", etc.
+title text,
+description text,
+content text,
+created_at timestamp default now(),
+audio_file text,
+captions_file text,
+video_file text,
+poster_image text,
+photo_file text,
+caption text,
+alt_text text,
+source text,
+files jsonb                  -- for uploader feather (array of file paths)
